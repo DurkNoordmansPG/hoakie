@@ -125,6 +125,7 @@ export type ErrorMessage = {
 
 export type UI = {
   title: string
+  title_url?: string
   chat_title: string
   chat_description: string
   logo?: string

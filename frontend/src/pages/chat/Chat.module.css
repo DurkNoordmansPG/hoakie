@@ -20,6 +20,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+
   background: radial-gradient(108.78% 108.78% at 50.02% 19.78%, #ffffff 57.29%, #eef6fe 100%);
   box-shadow:
     0px 2px 4px rgba(0, 0, 0, 0.14),
@@ -77,6 +78,7 @@
   flex-direction: column;
   margin-top: 24px;
 }
+
 
 .chatMessageUser {
   display: flex;
@@ -139,16 +141,27 @@
 
 .chatInput {
   position: sticky;
+  bottom: 0;
+
+  /* vaste hoogte blijft */
+  height: 100px;              /* 100 is vaak te krap met statusbalk + input */
   flex: 0 0 100px;
+
   padding-top: 12px;
   padding-bottom: 24px;
   padding-left: 24px;
   padding-right: 24px;
+
   width: calc(100% - 100px);
   max-width: 1028px;
   margin-bottom: 50px;
   margin-top: 8px;
+
+  /* belangrijk: de absolute knoppen blijven werken */
+  display: flex;
+  align-items: stretch;
 }
+
 
 .clearChatBroom {
   box-sizing: border-box;
@@ -395,4 +408,37 @@ a {
   .citationPanel {
     max-width: 100%;
   }
+}
+
+/* Linker rail kolom binnen de rechter-stack (zelfde x als broom) */
+.attachRail {
+  position: absolute;
+  left: 7px;      /* exact als broom/newChat */
+  top: 12px;      /* gelijk aan padding-top van chatInput */
+  width: 40px;
+  height: 40px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Zorg dat de Fluent IconButton ook echt 40x40 is */
+.attachRail :global(button) {
+  width: 40px !important;
+  height: 40px !important;
+}
+/* Ruimte reserveren zodat je label + input niet onder de rail komen */
+.inputInset {
+  padding-left: 54px; /* 40px knop + marge */
+  min-width: 0;
+}
+
+/* Statusbalk netjes */
+.fileStatusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  margin-bottom: 8px;
+  overflow: hidden;
 }

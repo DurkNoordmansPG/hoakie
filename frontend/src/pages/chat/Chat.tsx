@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useContext, useLayoutEffect } from 'react'
+import { useRef, useState, useEffect, useContext, useLayoutEffect, useMemo } from 'react'
 import { CommandBarButton, IconButton, Dialog, DialogType, Stack } from '@fluentui/react'
 import { SquareRegular, ShieldLockRegular, ErrorCircleRegular } from '@fluentui/react-icons'
 
@@ -12,7 +12,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { nord } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 import styles from './Chat.module.css'
-import Contoso from '../../assets/Contoso.svg'
+import GroLogo from '../../assets/Provincie-Groningen_horizontaal-basis.svg'
 import { XSSAllowTags } from '../../constants/sanatizeAllowables'
 
 import {
@@ -31,13 +31,13 @@ import {
   ChatHistoryLoadingState,
   CosmosDBStatus,
   ErrorMessage,
-  ExecResults,
-} from "../../api";
-import { Answer } from "../../components/Answer";
-import { QuestionInput } from "../../components/QuestionInput";
-import { ChatHistoryPanel } from "../../components/ChatHistory/ChatHistoryPanel";
-import { AppStateContext } from "../../state/AppProvider";
-import { useBoolean } from "@fluentui/react-hooks";
+  ExecResults
+} from '../../api'
+import { Answer } from '../../components/Answer'
+import { QuestionInput } from '../../components/QuestionInput'
+import { ChatHistoryPanel } from '../../components/ChatHistory/ChatHistoryPanel'
+import { AppStateContext } from '../../state/AppProvider'
+import { useBoolean } from '@fluentui/react-hooks'
 
 const enum messageStatus {
   NotRunning = 'Not Running',
@@ -50,6 +50,10 @@ const Chat = () => {
   const ui = appStateContext?.state.frontendSettings?.ui
   const AUTH_ENABLED = appStateContext?.state.frontendSettings?.auth_enabled
   const chatMessageStreamEnd = useRef<HTMLDivElement | null>(null)
+
+  // file input ref (robust, avoids losing selection on rerenders)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [showLoadingMessage, setShowLoadingMessage] = useState<boolean>(false)
   const [activeCitation, setActiveCitation] = useState<Citation>()
@@ -65,6 +69,12 @@ const Chat = () => {
   const [errorMsg, setErrorMsg] = useState<ErrorMessage | null>()
   const [logo, setLogo] = useState('')
   const [answerId, setAnswerId] = useState<string>('')
+
+  // uploading indicator
+  const [uploadingFiles, setUploadingFiles] = useState(false)
+
+  // selected file names for UI
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([])
 
   const errorDialogContentProps = {
     type: DialogType.close,
@@ -108,7 +118,7 @@ const Chat = () => {
 
   useEffect(() => {
     if (!appStateContext?.state.isLoading) {
-      setLogo(ui?.chat_logo || ui?.logo || Contoso)
+      setLogo(ui?.chat_logo || ui?.logo || GroLogo)
     }
   }, [appStateContext?.state.isLoading])
 
@@ -138,11 +148,14 @@ const Chat = () => {
   const parseExecResults = (exec_results_: any): void => {
     if (exec_results_ == undefined) return
     const exec_results = exec_results_.length === 2 ? exec_results_ : exec_results_.splice(2)
-    appStateContext?.dispatch({ type: 'SET_ANSWER_EXEC_RESULT', payload: { answerId: answerId, exec_result: exec_results } })
+    appStateContext?.dispatch({
+      type: 'SET_ANSWER_EXEC_RESULT',
+      payload: { answerId: answerId, exec_result: exec_results }
+    })
   }
 
   const processResultMessage = (resultMessage: ChatMessage, userMessage: ChatMessage, conversationId?: string) => {
-    if (typeof resultMessage.content === "string" && resultMessage.content.includes('all_exec_results')) {
+    if (typeof resultMessage.content === 'string' && resultMessage.content.includes('all_exec_results')) {
       const parsedExecResults = JSON.parse(resultMessage.content) as AzureSqlServerExecResults
       setExecResults(parsedExecResults.all_exec_results)
       assistantMessage.context = JSON.stringify({
@@ -179,19 +192,123 @@ const Chat = () => {
     }
   }
 
-  const makeApiRequestWithoutCosmosDB = async (question: ChatMessage["content"], conversationId?: string) => {
+  // Helper: upload bestanden naar /upload en geef fileName + text terug
+  const uploadAttachedFiles = async (files: File[]): Promise<{ fileName: string; text: string }[]> => {
+    if (files.length === 0) return []
+
+    const formData = new FormData()
+    files.forEach(file => formData.append('files', file))
+
+    const response = await fetch('/upload', {
+      method: 'POST',
+      body: formData
+    })
+
+    if (!response.ok) {
+      throw new Error('Uploaden van bestanden is mislukt')
+    }
+
+    const json = await response.json()
+    return json.files ?? []
+  }
+
+  const clearSelectedFiles = () => {
+    if (fileInputRef.current) fileInputRef.current.value = ''
+    setSelectedFiles([])
+  }
+
+  const onFilesChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : []
+    const allowedExtensions = ['.doc', '.docx', '.txt', '.pdf']
+    const invalidFiles = files.filter(file => {
+      const extension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'))
+      return !allowedExtensions.includes(extension)
+    })
+
+    if (invalidFiles.length > 0) {
+      setErrorMsg({
+        title: 'Ongeldig bestandstype',
+        subtitle: 'Alleen Word (.doc, .docx), TXT en PDF bestanden zijn toegestaan.'
+      })
+      toggleErrorDialog()
+      // Clear the input
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      setSelectedFiles([])
+      return
+    }
+
+    setSelectedFiles(files.map(f => f.name))
+  }
+
+  const selectedFilesLabel = useMemo(() => {
+    if (selectedFiles.length === 0) return 'Geen bestand gekozen'
+    if (selectedFiles.length === 1) return selectedFiles[0]
+    const firstTwo = selectedFiles.slice(0, 2).join(', ')
+    const rest = selectedFiles.length - 2
+    return rest > 0 ? `${firstTwo} (+${rest} meer)` : firstTwo
+  }, [selectedFiles])
+
+  // Zonder Cosmos DB, met bestandsinhoud in de prompt
+  const makeApiRequestWithoutCosmosDB = async (question: ChatMessage['content'], conversationId?: string) => {
     setIsLoading(true)
     setShowLoadingMessage(true)
     const abortController = new AbortController()
     abortFuncs.current.unshift(abortController)
 
-    const questionContent = typeof question === 'string' ? question : [{ type: "text", text: question[0].text }, { type: "image_url", image_url: { url: question[1].image_url.url } }]
-    question = typeof question !== 'string' && question[0]?.text?.length > 0 ? question[0].text : question
+    const rawQuestionContent =
+      typeof question === 'string'
+        ? question
+        : [{ type: 'text', text: question[0].text }, { type: 'image_url', image_url: { url: question[1].image_url.url } }]
+
+    const baseText = typeof question === 'string' ? question : question[0]?.text ?? ''
+
+    let finalQuestionText = baseText
+
+    try {
+      setUploadingFiles(true)
+
+      const files = fileInputRef.current?.files ? Array.from(fileInputRef.current.files) : []
+      const uploaded = await uploadAttachedFiles(files)
+
+      if (uploaded.length > 0) {
+        const fileContext = uploaded.map(f => `Bestand: ${f.fileName}\n---------------------\n${f.text}`).join('\n\n')
+
+        finalQuestionText =
+          `${baseText}\n\n` +
+          'Hieronder staat de inhoud van de meegezonden bestanden. Gebruik deze informatie als context bij het beantwoorden van mijn vraag:\n\n' +
+          fileContext
+      }
+    } catch (e) {
+      console.error('Upload failed:', e)
+
+      setIsLoading(false)
+      setShowLoadingMessage(false)
+      setUploadingFiles(false)
+      abortController.abort()
+      abortFuncs.current = abortFuncs.current.filter(a => a !== abortController)
+
+      setErrorMsg({
+        title: 'Upload mislukt',
+        subtitle: 'Controleer of /upload bereikbaar is en probeer een kleiner bestand.'
+      })
+      toggleErrorDialog()
+      return
+    } finally {
+      setUploadingFiles(false)
+      clearSelectedFiles()
+    }
+
+    let questionContent: any
+    if (Array.isArray(rawQuestionContent)) {
+      questionContent = [{ ...rawQuestionContent[0], text: finalQuestionText }, rawQuestionContent[1]]
+    } else {
+      questionContent = finalQuestionText
+    }
 
     const userMessage: ChatMessage = {
       id: uuid(),
       role: 'user',
-      content: questionContent as string,
+      content: questionContent as any,
       date: new Date().toISOString()
     }
 
@@ -199,7 +316,7 @@ const Chat = () => {
     if (!conversationId) {
       conversation = {
         id: conversationId ?? uuid(),
-        title: question as string,
+        title: finalQuestionText,
         messages: [userMessage],
         date: new Date().toISOString()
       }
@@ -235,7 +352,7 @@ const Chat = () => {
           const { done, value } = await reader.read()
           if (done) break
 
-          var text = new TextDecoder('utf-8').decode(value)
+          const text = new TextDecoder('utf-8').decode(value)
           const objects = text.split('\n')
           objects.forEach(obj => {
             try {
@@ -262,8 +379,6 @@ const Chat = () => {
               if (!(e instanceof SyntaxError)) {
                 console.error(e)
                 throw e
-              } else {
-                console.log('Incomplete message. Continuing...')
               }
             }
           })
@@ -306,18 +421,67 @@ const Chat = () => {
     return abortController.abort()
   }
 
-  const makeApiRequestWithCosmosDB = async (question: ChatMessage["content"], conversationId?: string) => {
+  // Met Cosmos DB, ook verrijkt met bestandsinhoud
+  const makeApiRequestWithCosmosDB = async (question: ChatMessage['content'], conversationId?: string) => {
     setIsLoading(true)
     setShowLoadingMessage(true)
     const abortController = new AbortController()
     abortFuncs.current.unshift(abortController)
-    const questionContent = typeof question === 'string' ? question : [{ type: "text", text: question[0].text }, { type: "image_url", image_url: { url: question[1].image_url.url } }]
-    question = typeof question !== 'string' && question[0]?.text?.length > 0 ? question[0].text : question
+
+    const rawQuestionContent =
+      typeof question === 'string'
+        ? question
+        : [{ type: 'text', text: question[0].text }, { type: 'image_url', image_url: { url: question[1].image_url.url } }]
+
+    const baseText = typeof question === 'string' ? question : question[0]?.text ?? ''
+
+    let finalQuestionText = baseText
+
+    try {
+      setUploadingFiles(true)
+
+      const files = fileInputRef.current?.files ? Array.from(fileInputRef.current.files) : []
+      const uploaded = await uploadAttachedFiles(files)
+
+      if (uploaded.length > 0) {
+        const fileContext = uploaded.map(f => `Bestand: ${f.fileName}\n---------------------\n${f.text}`).join('\n\n')
+
+        finalQuestionText =
+          `${baseText}\n\n` +
+          'Hieronder staat de inhoud van de meegezonden bestanden. Gebruik deze informatie als context bij het beantwoorden van mijn vraag:\n\n' +
+          fileContext
+      }
+    } catch (e) {
+      console.error('Upload failed:', e)
+
+      setIsLoading(false)
+      setShowLoadingMessage(false)
+      setUploadingFiles(false)
+      abortController.abort()
+      abortFuncs.current = abortFuncs.current.filter(a => a !== abortController)
+
+      setErrorMsg({
+        title: 'Upload mislukt',
+        subtitle: 'Controleer of /upload bereikbaar is en probeer een kleiner bestand.'
+      })
+      toggleErrorDialog()
+      return
+    } finally {
+      setUploadingFiles(false)
+      clearSelectedFiles()
+    }
+
+    let questionContent: any
+    if (Array.isArray(rawQuestionContent)) {
+      questionContent = [{ ...rawQuestionContent[0], text: finalQuestionText }, rawQuestionContent[1]]
+    } else {
+      questionContent = finalQuestionText
+    }
 
     const userMessage: ChatMessage = {
       id: uuid(),
       role: 'user',
-      content: questionContent as string,
+      content: questionContent as any,
       date: new Date().toISOString()
     }
 
@@ -343,22 +507,24 @@ const Chat = () => {
       }
       setMessages(request.messages)
     }
+
     let result = {} as ChatResponse
-    var errorResponseMessage = 'Please try again. If the problem persists, please contact the site administrator.'
+    let errorResponseMessage = 'Please try again. If the problem persists, please contact the site administrator.'
     try {
       const response = conversationId
         ? await historyGenerate(request, abortController.signal, conversationId)
         : await historyGenerate(request, abortController.signal)
+
       if (!response?.ok) {
         const responseJson = await response.json()
-        errorResponseMessage =
-          responseJson.error === undefined ? errorResponseMessage : parseErrorMessage(responseJson.error)
+        errorResponseMessage = responseJson.error === undefined ? errorResponseMessage : parseErrorMessage(responseJson.error)
         let errorChatMsg: ChatMessage = {
           id: uuid(),
           role: ERROR,
           content: `There was an error generating a response. Chat history can't be saved at this time. ${errorResponseMessage}`,
           date: new Date().toISOString()
         }
+
         let resultConversation
         if (conversationId) {
           resultConversation = appStateContext?.state?.chatHistory?.find(conv => conv.id === conversationId)
@@ -377,10 +543,12 @@ const Chat = () => {
           abortFuncs.current = abortFuncs.current.filter(a => a !== abortController)
           return
         }
+
         appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: resultConversation })
         setMessages([...resultConversation.messages])
         return
       }
+
       if (response?.body) {
         const reader = response.body.getReader()
 
@@ -390,7 +558,7 @@ const Chat = () => {
           const { done, value } = await reader.read()
           if (done) break
 
-          var text = new TextDecoder('utf-8').decode(value)
+          const text = new TextDecoder('utf-8').decode(value)
           const objects = text.split('\n')
           objects.forEach(obj => {
             try {
@@ -421,8 +589,6 @@ const Chat = () => {
               if (!(e instanceof SyntaxError)) {
                 console.error(e)
                 throw e
-              } else {
-                console.log('Incomplete message. Continuing...')
               }
             }
           })
@@ -438,9 +604,7 @@ const Chat = () => {
             abortFuncs.current = abortFuncs.current.filter(a => a !== abortController)
             return
           }
-          isEmpty(toolMessage)
-            ? resultConversation.messages.push(assistantMessage)
-            : resultConversation.messages.push(toolMessage, assistantMessage)
+          isEmpty(toolMessage) ? resultConversation.messages.push(assistantMessage) : resultConversation.messages.push(toolMessage, assistantMessage)
         } else {
           resultConversation = {
             id: result.history_metadata.conversation_id,
@@ -448,20 +612,11 @@ const Chat = () => {
             messages: [userMessage],
             date: result.history_metadata.date
           }
-          isEmpty(toolMessage)
-            ? resultConversation.messages.push(assistantMessage)
-            : resultConversation.messages.push(toolMessage, assistantMessage)
+          isEmpty(toolMessage) ? resultConversation.messages.push(assistantMessage) : resultConversation.messages.push(toolMessage, assistantMessage)
         }
-        if (!resultConversation) {
-          setIsLoading(false)
-          setShowLoadingMessage(false)
-          abortFuncs.current = abortFuncs.current.filter(a => a !== abortController)
-          return
-        }
+
         appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: resultConversation })
-        isEmpty(toolMessage)
-          ? setMessages([...messages, assistantMessage])
-          : setMessages([...messages, toolMessage, assistantMessage])
+        isEmpty(toolMessage) ? setMessages([...messages, assistantMessage]) : setMessages([...messages, toolMessage, assistantMessage])
       }
     } catch (e) {
       if (!abortController.signal.aborted) {
@@ -480,6 +635,7 @@ const Chat = () => {
           content: errorMessage,
           date: new Date().toISOString()
         }
+
         let resultConversation
         if (conversationId) {
           resultConversation = appStateContext?.state?.chatHistory?.find(conv => conv.id === conversationId)
@@ -493,13 +649,6 @@ const Chat = () => {
           resultConversation.messages.push(errorChatMsg)
         } else {
           if (!result.history_metadata) {
-            console.error('Error retrieving data.', result)
-            let errorChatMsg: ChatMessage = {
-              id: uuid(),
-              role: ERROR,
-              content: errorMessage,
-              date: new Date().toISOString()
-            }
             setMessages([...messages, userMessage, errorChatMsg])
             setIsLoading(false)
             setShowLoadingMessage(false)
@@ -514,13 +663,8 @@ const Chat = () => {
           }
           resultConversation.messages.push(errorChatMsg)
         }
-        if (!resultConversation) {
-          setIsLoading(false)
-          setShowLoadingMessage(false)
-          abortFuncs.current = abortFuncs.current.filter(a => a !== abortController)
-          return
-        }
-        appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: resultConversation })
+
+        appStateContext?.dispatch({ type: 'UPDATE_CHAT_HISTORY', payload: resultConversation })
         setMessages([...messages, errorChatMsg])
       } else {
         setMessages([...messages, userMessage])
@@ -531,6 +675,7 @@ const Chat = () => {
       abortFuncs.current = abortFuncs.current.filter(a => a !== abortController)
       setProcessMessages(messageStatus.Done)
     }
+
     return abortController.abort()
   }
 
@@ -561,23 +706,16 @@ const Chat = () => {
 
   const tryGetRaiPrettyError = (errorMessage: string) => {
     try {
-      // Using a regex to extract the JSON part that contains "innererror"
       const match = errorMessage.match(/'innererror': ({.*})\}\}/)
       if (match) {
-        // Replacing single quotes with double quotes and converting Python-like booleans to JSON booleans
-        const fixedJson = match[1]
-          .replace(/'/g, '"')
-          .replace(/\bTrue\b/g, 'true')
-          .replace(/\bFalse\b/g, 'false')
+        const fixedJson = match[1].replace(/'/g, '"').replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false')
         const innerErrorJson = JSON.parse(fixedJson)
         let reason = ''
-        // Check if jailbreak content filter is the reason of the error
         const jailbreak = innerErrorJson.content_filter_result.jailbreak
         if (jailbreak.filtered === true) {
           reason = 'Jailbreak'
         }
 
-        // Returning the prettified error message
         if (reason !== '') {
           return (
             'The prompt was filtered due to triggering Azure OpenAI’s content filtering system.\n' +
@@ -685,7 +823,6 @@ const Chat = () => {
               return errRes
             })
         }
-      } else {
       }
       appStateContext?.dispatch({ type: 'UPDATE_CHAT_HISTORY', payload: appStateContext.state.currentChat })
       setMessages(appStateContext.state.currentChat.messages)
@@ -717,7 +854,7 @@ const Chat = () => {
   }
 
   const parseCitationFromMessage = (message: ChatMessage) => {
-    if (message?.role && message?.role === 'tool' && typeof message?.content === "string") {
+    if (message?.role && message?.role === 'tool' && typeof message?.content === 'string') {
       try {
         const toolMessage = JSON.parse(message.content) as ToolMessageContent
         return toolMessage.citations
@@ -729,23 +866,17 @@ const Chat = () => {
   }
 
   const parsePlotFromMessage = (message: ChatMessage) => {
-    if (message?.role && message?.role === "tool" && typeof message?.content === "string") {
+    if (message?.role && message?.role === 'tool' && typeof message?.content === 'string') {
       try {
-        const execResults = JSON.parse(message.content) as AzureSqlServerExecResults;
-        const codeExecResult = execResults.all_exec_results.at(-1)?.code_exec_result;
-
-        if (codeExecResult === undefined) {
-          return null;
-        }
-        return codeExecResult.toString();
+        const execResults = JSON.parse(message.content) as AzureSqlServerExecResults
+        const codeExecResult = execResults.all_exec_results.at(-1)?.code_exec_result
+        if (codeExecResult === undefined) return null
+        return codeExecResult.toString()
+      } catch {
+        return null
       }
-      catch {
-        return null;
-      }
-      // const execResults = JSON.parse(message.content) as AzureSqlServerExecResults;
-      // return execResults.all_exec_results.at(-1)?.code_exec_result;
     }
-    return null;
+    return null
   }
 
   const disabledButton = () => {
@@ -761,16 +892,13 @@ const Chat = () => {
     <div className={styles.container} role="main">
       {showAuthMessage ? (
         <Stack className={styles.chatEmptyState}>
-          <ShieldLockRegular
-            className={styles.chatIcon}
-            style={{ color: 'darkorange', height: '200px', width: '200px' }}
-          />
+          <ShieldLockRegular className={styles.chatIcon} style={{ color: 'darkorange', height: '200px', width: '200px' }} />
           <h1 className={styles.chatEmptyStateTitle}>Authentication Not Configured</h1>
           <h2 className={styles.chatEmptyStateSubtitle}>
             This app does not have authentication configured. Please add an identity provider by finding your app in the{' '}
             <a href="https://portal.azure.com/" target="_blank">
               Azure Portal
-            </a>
+            </a>{' '}
             and following{' '}
             <a
               href="https://learn.microsoft.com/en-us/azure/app-service/scenario-secure-app-authentication-app-service#3-configure-authentication-and-authorization"
@@ -788,37 +916,56 @@ const Chat = () => {
         </Stack>
       ) : (
         <Stack horizontal className={styles.chatRoot}>
-          <div className={styles.chatContainer}>
+          {/* ✅ chatContainer mag NIET scrollen; alleen de stream */}
+          <div className={styles.chatContainer} style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
             {!messages || messages.length < 1 ? (
-              <Stack className={styles.chatEmptyState}>
+              <Stack className={styles.chatEmptyState} style={{ flex: '1 1 auto', overflow: 'hidden' }}>
                 <img src={logo} className={styles.chatIcon} aria-hidden="true" />
                 <h1 className={styles.chatEmptyStateTitle}>{ui?.chat_title}</h1>
                 <h2 className={styles.chatEmptyStateSubtitle}>{ui?.chat_description}</h2>
               </Stack>
             ) : (
-              <div className={styles.chatMessageStream} style={{ marginBottom: isLoading ? '40px' : '0px' }} role="log">
+              <div
+                className={styles.chatMessageStream}
+                style={{
+                  flex: '1 1 auto',
+                  overflowY: 'auto',
+                  marginBottom: isLoading ? '40px' : '0px'
+                }}
+                role="log">
                 {messages.map((answer, index) => (
                   <>
                     {answer.role === 'user' ? (
                       <div className={styles.chatMessageUser} tabIndex={0}>
                         <div className={styles.chatMessageUserMessage}>
-                          {typeof answer.content === "string" && answer.content ? answer.content : Array.isArray(answer.content) ? <>{answer.content[0].text} <img className={styles.uploadedImageChat} src={answer.content[1].image_url.url} alt="Uploaded Preview" /></> : null}
+                          {typeof answer.content === 'string' && answer.content
+                            ? answer.content
+                            : Array.isArray(answer.content)
+                              ? (
+                                <>
+                                  {answer.content[0].text}{' '}
+                                  <img className={styles.uploadedImageChat} src={answer.content[1].image_url.url} alt="Uploaded Preview" />
+                                </>
+                              )
+                              : null}
                         </div>
                       </div>
                     ) : answer.role === 'assistant' ? (
                       <div className={styles.chatMessageGpt}>
-                        {typeof answer.content === "string" && <Answer
-                          answer={{
-                            answer: answer.content,
-                            citations: parseCitationFromMessage(messages[index - 1]),
-                            generated_chart: parsePlotFromMessage(messages[index - 1]),
-                            message_id: answer.id,
-                            feedback: answer.feedback,
-                            exec_results: execResults
-                          }}
-                          onCitationClicked={c => onShowCitation(c)}
-                          onExectResultClicked={() => onShowExecResult(answerId)}
-                        />}
+                        {typeof answer.content === 'string' && (
+                          <Answer
+                            answer={{
+                              answer: answer.content,
+                              citations: parseCitationFromMessage(messages[index - 1]),
+                              generated_chart: parsePlotFromMessage(messages[index - 1]),
+                              message_id: answer.id,
+                              feedback: answer.feedback,
+                              exec_results: execResults
+                            }}
+                            onCitationClicked={c => onShowCitation(c)}
+                            onExectResultClicked={() => onShowExecResult(answerId)}
+                          />
+                        )}
                       </div>
                     ) : answer.role === ERROR ? (
                       <div className={styles.chatMessageError}>
@@ -826,31 +973,30 @@ const Chat = () => {
                           <ErrorCircleRegular className={styles.errorIcon} style={{ color: 'rgba(182, 52, 67, 1)' }} />
                           <span>Error</span>
                         </Stack>
-                        <span className={styles.chatMessageErrorContent}>{typeof answer.content === "string" && answer.content}</span>
+                        <span className={styles.chatMessageErrorContent}>{typeof answer.content === 'string' && answer.content}</span>
                       </div>
                     ) : null}
                   </>
                 ))}
                 {showLoadingMessage && (
-                  <>
-                    <div className={styles.chatMessageGpt}>
-                      <Answer
-                        answer={{
-                          answer: "Generating answer...",
-                          citations: [],
-                          generated_chart: null
-                        }}
-                        onCitationClicked={() => null}
-                        onExectResultClicked={() => null}
-                      />
-                    </div>
-                  </>
+                  <div className={styles.chatMessageGpt}>
+                    <Answer
+                      answer={{
+                        answer: 'Generating answer...',
+                        citations: [],
+                        generated_chart: null
+                      }}
+                      onCitationClicked={() => null}
+                      onExectResultClicked={() => null}
+                    />
+                  </div>
                 )}
                 <div ref={chatMessageStreamEnd} />
               </div>
             )}
 
-            <Stack horizontal className={styles.chatInput}>
+            {/* Input is altijd in flow, onderaan */}
+            <Stack horizontal className={styles.chatInput} style={{ flex: '0 0 auto' }}>
               {isLoading && messages.length > 0 && (
                 <Stack
                   horizontal
@@ -866,25 +1012,21 @@ const Chat = () => {
                   </span>
                 </Stack>
               )}
+
+              {/* Linkerkolom met new chat / clear chat knoppen */}
               <Stack>
                 {appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured && (
                   <CommandBarButton
                     role="button"
                     styles={{
-                      icon: {
-                        color: '#FFFFFF'
-                      },
-                      iconDisabled: {
-                        color: '#BDBDBD !important'
-                      },
+                      icon: { color: '#FFFFFF' },
+                      iconDisabled: { color: '#BDBDBD !important' },
                       root: {
                         color: '#FFFFFF',
                         background:
                           'radial-gradient(109.81% 107.82% at 100.1% 90.19%, #0F6CBD 33.63%, #2D87C3 70.31%, #8DDDD8 100%)'
                       },
-                      rootDisabled: {
-                        background: '#F0F0F0'
-                      }
+                      rootDisabled: { background: '#F0F0F0' }
                     }}
                     className={styles.newChatIcon}
                     iconProps={{ iconName: 'Add' }}
@@ -896,20 +1038,14 @@ const Chat = () => {
                 <CommandBarButton
                   role="button"
                   styles={{
-                    icon: {
-                      color: '#FFFFFF'
-                    },
-                    iconDisabled: {
-                      color: '#BDBDBD !important'
-                    },
+                    icon: { color: '#FFFFFF' },
+                    iconDisabled: { color: '#BDBDBD !important' },
                     root: {
                       color: '#FFFFFF',
                       background:
                         'radial-gradient(109.81% 107.82% at 100.1% 90.19%, #0F6CBD 33.63%, #2D87C3 70.31%, #8DDDD8 100%)'
                     },
-                    rootDisabled: {
-                      background: '#F0F0F0'
-                    }
+                    rootDisabled: { background: '#F0F0F0' }
                   }}
                   className={
                     appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured
@@ -917,35 +1053,83 @@ const Chat = () => {
                       : styles.clearChatBroomNoCosmos
                   }
                   iconProps={{ iconName: 'Broom' }}
-                  onClick={
-                    appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured
-                      ? clearChat
-                      : newChat
-                  }
+                  onClick={appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured ? clearChat : newChat}
                   disabled={disabledButton()}
                   aria-label="clear chat button"
                 />
-                <Dialog
-                  hidden={hideErrorDialog}
-                  onDismiss={handleErrorDialogClose}
-                  dialogContentProps={errorDialogContentProps}
-                  modalProps={modalProps}></Dialog>
+                <Dialog hidden={hideErrorDialog} onDismiss={handleErrorDialogClose} dialogContentProps={errorDialogContentProps} modalProps={modalProps} />
               </Stack>
-              <QuestionInput
-                clearOnSend
-                placeholder="Type a new question..."
-                disabled={isLoading}
-                onSend={(question, id) => {
-                  appStateContext?.state.isCosmosDBAvailable?.cosmosDB
-                    ? makeApiRequestWithCosmosDB(question, id)
-                    : makeApiRequestWithoutCosmosDB(question, id)
-                }}
-                conversationId={
-                  appStateContext?.state.currentChat?.id ? appStateContext?.state.currentChat?.id : undefined
-                }
-              />
+
+              {/* Rechterkolom: upload/status + vraagveld */}
+              <Stack grow styles={{ root: { minWidth: 0 } }}>
+                {/* Attach-knop in dezelfde horizontale kolom als broom/newchat */}
+                <div className={styles.attachRail}>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    disabled={isLoading}
+                    onChange={onFilesChanged}
+                    accept=".doc,.docx,.txt,.pdf"
+                    style={{ display: 'none' }}
+                  />
+                  <IconButton
+                    iconProps={{ iconName: 'Attach' }}
+                    ariaLabel="Bestanden toevoegen"
+                    disabled={isLoading}
+                    onClick={() => fileInputRef.current?.click()}
+                  />
+                </div>
+
+                {/* Alles rechts krijgt inset zodat het niet onder de attach-knop komt */}
+                <div className={styles.inputInset}>
+                  <div className={styles.fileStatusRow}>
+                    <span
+                      title={selectedFiles.length > 0 ? selectedFiles.join(', ') : 'Geen bestand gekozen'}
+                      style={{
+                        fontSize: 12,
+                        opacity: 0.85,
+                        whiteSpace: 'nowrap',
+                        textOverflow: 'ellipsis',
+                        overflow: 'hidden',
+                        minWidth: 0,
+                        flex: 1
+                      }}>
+                      {selectedFilesLabel}
+                    </span>
+
+                    {selectedFiles.length > 0 && (
+                      <IconButton
+                        iconProps={{ iconName: 'Cancel' }}
+                        ariaLabel="Selectie wissen"
+                        disabled={isLoading}
+                        onClick={clearSelectedFiles}
+                      />
+                    )}
+                  </div>
+
+                  {uploadingFiles && (
+                    <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 6 }}>
+                      Bestanden worden geüpload…
+                    </div>
+                  )}
+
+                  <QuestionInput
+                    clearOnSend
+                    placeholder="Stel je vraag..."
+                    disabled={isLoading}
+                    onSend={(question, id) => {
+                      appStateContext?.state.isCosmosDBAvailable?.cosmosDB
+                        ? makeApiRequestWithCosmosDB(question, id)
+                        : makeApiRequestWithoutCosmosDB(question, id)
+                    }}
+                    conversationId={appStateContext?.state.currentChat?.id ? appStateContext?.state.currentChat?.id : undefined}
+                  />
+                </div>
+              </Stack>
             </Stack>
           </div>
+
           {/* Citation Panel */}
           {messages && messages.length > 0 && isCitationPanelOpen && activeCitation && (
             <Stack.Item className={styles.citationPanel} tabIndex={0} role="tabpanel" aria-label="Citations Panel">
@@ -958,20 +1142,12 @@ const Chat = () => {
                 <span aria-label="Citations" className={styles.citationPanelHeader}>
                   Citations
                 </span>
-                <IconButton
-                  iconProps={{ iconName: 'Cancel' }}
-                  aria-label="Close citations panel"
-                  onClick={() => setIsCitationPanelOpen(false)}
-                />
+                <IconButton iconProps={{ iconName: 'Cancel' }} aria-label="Close citations panel" onClick={() => setIsCitationPanelOpen(false)} />
               </Stack>
               <h5
                 className={styles.citationPanelTitle}
                 tabIndex={0}
-                title={
-                  activeCitation.url && !activeCitation.url.includes('blob.core')
-                    ? activeCitation.url
-                    : activeCitation.title ?? ''
-                }
+                title={activeCitation.url && !activeCitation.url.includes('blob.core') ? activeCitation.url : activeCitation.title ?? ''}
                 onClick={() => onViewSource(activeCitation)}>
                 {activeCitation.title}
               </h5>
@@ -986,6 +1162,7 @@ const Chat = () => {
               </div>
             </Stack.Item>
           )}
+
           {messages && messages.length > 0 && isIntentsPanelOpen && (
             <Stack.Item className={styles.citationPanel} tabIndex={0} role="tabpanel" aria-label="Intents Panel">
               <Stack
@@ -997,41 +1174,51 @@ const Chat = () => {
                 <span aria-label="Intents" className={styles.citationPanelHeader}>
                   Intents
                 </span>
-                <IconButton
-                  iconProps={{ iconName: 'Cancel' }}
-                  aria-label="Close intents panel"
-                  onClick={() => setIsIntentsPanelOpen(false)}
-                />
+                <IconButton iconProps={{ iconName: 'Cancel' }} aria-label="Close intents panel" onClick={() => setIsIntentsPanelOpen(false)} />
               </Stack>
               <Stack horizontalAlign="space-between">
                 {appStateContext?.state?.answerExecResult[answerId]?.map((execResult: ExecResults, index) => (
-                  <Stack className={styles.exectResultList} verticalAlign="space-between">
-                    <><span>Intent:</span> <p>{execResult.intent}</p></>
-                    {execResult.search_query && <><span>Search Query:</span>
-                      <SyntaxHighlighter
-                        style={nord}
-                        wrapLines={true}
-                        lineProps={{ style: { wordBreak: 'break-all', whiteSpace: 'pre-wrap' } }}
-                        language="sql"
-                        PreTag="p">
-                        {execResult.search_query}
-                      </SyntaxHighlighter></>}
-                    {execResult.search_result && <><span>Search Result:</span> <p>{execResult.search_result}</p></>}
-                    {execResult.code_generated && <><span>Code Generated:</span>
-                      <SyntaxHighlighter
-                        style={nord}
-                        wrapLines={true}
-                        lineProps={{ style: { wordBreak: 'break-all', whiteSpace: 'pre-wrap' } }}
-                        language="python"
-                        PreTag="p">
-                        {execResult.code_generated}
-                      </SyntaxHighlighter>
-                    </>}
+                  <Stack key={index} className={styles.exectResultList} verticalAlign="space-between">
+                    <>
+                      <span>Intent:</span> <p>{execResult.intent}</p>
+                    </>
+                    {execResult.search_query && (
+                      <>
+                        <span>Search Query:</span>
+                        <SyntaxHighlighter
+                          style={nord}
+                          wrapLines={true}
+                          lineProps={{ style: { wordBreak: 'break-all', whiteSpace: 'pre-wrap' } }}
+                          language="sql"
+                          PreTag="p">
+                          {execResult.search_query}
+                        </SyntaxHighlighter>
+                      </>
+                    )}
+                    {execResult.search_result && (
+                      <>
+                        <span>Search Result:</span> <p>{execResult.search_result}</p>
+                      </>
+                    )}
+                    {execResult.code_generated && (
+                      <>
+                        <span>Code Generated:</span>
+                        <SyntaxHighlighter
+                          style={nord}
+                          wrapLines={true}
+                          lineProps={{ style: { wordBreak: 'break-all', whiteSpace: 'pre-wrap' } }}
+                          language="python"
+                          PreTag="p">
+                          {execResult.code_generated}
+                        </SyntaxHighlighter>
+                      </>
+                    )}
                   </Stack>
                 ))}
               </Stack>
             </Stack.Item>
           )}
+
           {appStateContext?.state.isChatHistoryOpen &&
             appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured && <ChatHistoryPanel />}
         </Stack>

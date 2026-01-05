@@ -42,12 +42,13 @@ class _UiSettings(BaseSettings):
     )
 
     title: str = "Contoso"
+    title_url: str = "/"
     logo: Optional[str] = None
     chat_logo: Optional[str] = None
     chat_title: str = "Start chatting"
-    chat_description: str = "This chatbot is configured to answer your questions"
+    chat_description: str = "Deze chatbot heeft geen toegang tot internet en kan alleen informatie geven die is opgenomen in de trainingsgegevens of uit bijlagen."
     favicon: str = "/favicon.ico"
-    show_share_button: bool = True
+    show_share_button: bool = False
     show_chat_history_button: bool = True
 
 

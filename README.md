@@ -487,6 +487,7 @@ The interface allows for easy adaptation of the UI by modifying certain elements
 | App Setting | Required? | Default Value | Note |
 |---|---|---|---|
 |UI_TITLE|No|Contoso| Chat title (left-top) and page title (HTML)
+|UI_TITLE_URL|No|/| URL to navigate to when clicking the title (left-top)
 |UI_LOGO|No|| Logo (left-top). Defaults to Contoso logo. Configure the URL to your logo image to modify.
 |UI_CHAT_LOGO|No|| Logo (chat window). Defaults to Contoso logo. Configure the URL to your logo image to modify.
 |UI_CHAT_TITLE|No|Start chatting| Title (chat window)

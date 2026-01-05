@@ -5,6 +5,12 @@ import logging
 import uuid
 import httpx
 import asyncio
+import uuid
+from io import BytesIO
+
+from pypdf import PdfReader
+from docx import Document as DocxDocument
+
 from quart import (
     Blueprint,
     Quart,
@@ -37,6 +43,63 @@ from backend.utils import (
 )
 
 bp = Blueprint("routes", __name__, static_folder="static", template_folder="static")
+
+@bp.post("/upload")
+async def upload_files():
+    # Verwacht: multipart/form-data met veldnaam "files"
+    files = await request.files
+    uploaded_files = files.getlist("files")
+
+    results = []
+
+    for f in uploaded_files:
+        filename = f.filename or "unknown"
+        content_type = getattr(f, "mimetype", None) or "application/octet-stream"
+
+        # Quart FileStorage.read() is meestal sync -> geen await
+        raw_bytes = f.read()
+        if raw_bytes is None:
+            raw_bytes = b""
+
+        text = ""
+
+        try:
+            # PDF
+            if content_type == "application/pdf" or filename.lower().endswith(".pdf"):
+                pdf_reader = PdfReader(BytesIO(raw_bytes))
+                pages = []
+                for page in pdf_reader.pages:
+                    pages.append(page.extract_text() or "")
+                text = "\n\n".join(pages)
+
+            # DOCX
+            elif filename.lower().endswith(".docx"):
+                doc = DocxDocument(BytesIO(raw_bytes))
+                text = "\n".join(p.text for p in doc.paragraphs)
+
+            else:
+                # Fallback: tekst (utf-8)
+                text = raw_bytes.decode("utf-8", errors="ignore")
+
+        except Exception as e:
+            logging.exception(f"Failed parsing uploaded file {filename}: {e}")
+            text = ""
+
+        # Beperk lengte (tokens sparen)
+        max_chars = 15000
+        text = text[:max_chars]
+
+        results.append(
+            {
+                "id": str(uuid.uuid4()),
+                "fileName": filename,
+                "contentType": content_type,
+                "text": text,
+            }
+        )
+
+    return jsonify({"files": results})
+
 
 cosmos_db_ready = asyncio.Event()
 
