@@ -1,11 +1,11 @@
-._container_97uxp_1 {
+._container_xzyfl_1 {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-._chatRoot_97uxp_8 {
+._chatRoot_xzyfl_8 {
   flex: 1;
   display: flex;
   margin-top: 0px;
@@ -15,7 +15,7 @@
   gap: 5px;
 }
 
-._chatContainer_97uxp_18 {
+._chatContainer_xzyfl_18 {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -30,7 +30,7 @@
   max-height: calc(100vh - 100px);
 }
 
-._chatEmptyState_97uxp_33 {
+._chatEmptyState_xzyfl_33 {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -38,7 +38,7 @@
   align-items: center;
 }
 
-._chatEmptyStateTitle_97uxp_41 {
+._chatEmptyStateTitle_xzyfl_41 {
   font-style: normal;
   font-weight: 700;
   font-size: 36px;
@@ -50,7 +50,7 @@
   margin-bottom: 0px;
 }
 
-._chatEmptyStateSubtitle_97uxp_53 {
+._chatEmptyStateSubtitle_xzyfl_53 {
   margin-top: 20px;
   font-style: normal;
   font-weight: 400;
@@ -62,12 +62,12 @@
   color: #616161;
 }
 
-._chatIcon_97uxp_65 {
-  height: 300px;
+._chatIcon_xzyfl_65 {
+  height: 200px;
   width: auto;
 }
 
-._chatMessageStream_97uxp_70 {
+._chatMessageStream_xzyfl_70 {
   flex-grow: 1;
   max-width: 1028px;
   width: 100%;
@@ -80,13 +80,13 @@
 }
 
 
-._chatMessageUser_97uxp_83 {
+._chatMessageUser_xzyfl_83 {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 12px;
 }
 
-._chatMessageUserMessage_97uxp_89 {
+._chatMessageUserMessage_xzyfl_89 {
   position: relative;
   display: flex;
   padding: 20px;
@@ -107,13 +107,13 @@
   max-width: 80%;
 }
 
-._chatMessageGpt_97uxp_110 {
+._chatMessageGpt_xzyfl_110 {
   margin-bottom: 12px;
   max-width: 80%;
   display: flex;
 }
 
-._chatMessageError_97uxp_116 {
+._chatMessageError_xzyfl_116 {
   padding: 20px;
   border-radius: 8px;
   box-shadow:
@@ -127,7 +127,7 @@
   margin-bottom: 12px;
 }
 
-._chatMessageErrorContent_97uxp_130 {
+._chatMessageErrorContent_xzyfl_130 {
   font-family: 'Segoe UI';
   font-style: normal;
   font-weight: 400;
@@ -139,7 +139,7 @@
   align-items: center;
 }
 
-._chatInput_97uxp_142 {
+._chatInput_xzyfl_142 {
   position: sticky;
   bottom: 0;
 
@@ -163,7 +163,7 @@
 }
 
 
-._clearChatBroom_97uxp_166 {
+._clearChatBroom_xzyfl_166 {
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
@@ -179,7 +179,7 @@
   z-index: 1;
 }
 
-._clearChatBroomNoCosmos_97uxp_182 {
+._clearChatBroomNoCosmos_xzyfl_182 {
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
@@ -195,7 +195,7 @@
   z-index: 1;
 }
 
-._newChatIcon_97uxp_198 {
+._newChatIcon_xzyfl_198 {
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
@@ -211,7 +211,7 @@
   z-index: 1;
 }
 
-._stopGeneratingContainer_97uxp_214 {
+._stopGeneratingContainer_xzyfl_214 {
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
@@ -228,13 +228,13 @@
   border-radius: 16px;
 }
 
-._stopGeneratingIcon_97uxp_231 {
+._stopGeneratingIcon_xzyfl_231 {
   width: 14px;
   height: 14px;
   color: #424242;
 }
 
-._stopGeneratingText_97uxp_237 {
+._stopGeneratingText_xzyfl_237 {
   width: 103px;
   height: 20px;
   font-style: normal;
@@ -249,7 +249,7 @@
   flex-grow: 0;
 }
 
-._citationPanel_97uxp_252 {
+._citationPanel_xzyfl_252 {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -269,11 +269,11 @@
   max-height: calc(100vh - 100px);
 }
 
-._citationPanelHeaderContainer_97uxp_272 {
+._citationPanelHeaderContainer_xzyfl_272 {
   width: 100%;
 }
 
-._citationPanelHeader_97uxp_272 {
+._citationPanelHeader_xzyfl_272 {
   font-style: normal;
   font-weight: 600;
   font-size: 18px;
@@ -284,18 +284,18 @@
   flex-grow: 0;
 }
 
-._citationPanelDismiss_97uxp_287 {
+._citationPanelDismiss_xzyfl_287 {
   width: 18px;
   height: 18px;
   color: #424242;
 }
 
-._citationPanelDismiss_97uxp_287:hover {
+._citationPanelDismiss_xzyfl_287:hover {
   background-color: #d1d1d1;
   cursor: pointer;
 }
 
-._citationPanelTitle_97uxp_298 {
+._citationPanelTitle_xzyfl_298 {
   font-style: normal;
   font-weight: 600;
   font-size: 16px;
@@ -305,12 +305,12 @@
   margin-bottom: 12px;
 }
 
-._citationPanelTitle_97uxp_298:hover {
+._citationPanelTitle_xzyfl_298:hover {
   text-decoration: underline;
   cursor: pointer;
 }
 
-._citationPanelContent_97uxp_313 {
+._citationPanelContent_xzyfl_313 {
   font-style: normal;
   font-weight: 400;
   font-size: 14px;
@@ -322,7 +322,7 @@
   flex-grow: 0;
 }
 
-._exectResultList_97uxp_325 {
+._exectResultList_xzyfl_325 {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -330,15 +330,15 @@
   margin-top: 12px;
 }
 
-._exectResultList_97uxp_325:first-child {
+._exectResultList_xzyfl_325:first-child {
   margin-top: 0;
 }
 
-._exectResultList_97uxp_325:last-child {
+._exectResultList_xzyfl_325:last-child {
   border-bottom: none;
 }
 
-._exectResultList_97uxp_325 > p {
+._exectResultList_xzyfl_325 > p {
   display: flex;
   flex-direction: row;
   gap: 4px;
@@ -346,7 +346,7 @@
   margin-bottom: 16px;
 }
 
-._exectResultList_97uxp_325 > span {
+._exectResultList_xzyfl_325 > span {
   font-weight: 600;
 }
 
@@ -355,7 +355,7 @@ a {
   padding-right: 5px;
 }
 
-._viewSourceButton_97uxp_358 {
+._viewSourceButton_xzyfl_358 {
   font-style: normal;
   font-weight: 600;
   font-size: 12px;
@@ -369,12 +369,12 @@ a {
   border-radius: 4px;
 }
 
-._viewSourceButton_97uxp_358:hover {
+._viewSourceButton_xzyfl_358:hover {
   text-decoration: underline;
   cursor: pointer;
 }
 
-._uploadedImageChat_97uxp_377 {
+._uploadedImageChat_xzyfl_377 {
   position: absolute;
   right: -23px;
   bottom: -35px;
@@ -384,34 +384,34 @@ a {
 }
 
 @media (max-width: 480px) {
-  ._chatInput_97uxp_142 {
+  ._chatInput_xzyfl_142 {
     width: 90%;
     max-width: 90%;
   }
 
-  ._newChatIcon_97uxp_198 {
+  ._newChatIcon_xzyfl_198 {
     left: 0px;
   }
 
-  ._clearChatBroom_97uxp_166 {
+  ._clearChatBroom_xzyfl_166 {
     left: 0px;
   }
 
-  ._clearChatBroomNoCosmos_97uxp_182 {
+  ._clearChatBroomNoCosmos_xzyfl_182 {
     left: 0px;
   }
 
-  ._chatEmptyStateTitle_97uxp_41 {
+  ._chatEmptyStateTitle_xzyfl_41 {
     line-height: 36px;
   }
 
-  ._citationPanel_97uxp_252 {
+  ._citationPanel_xzyfl_252 {
     max-width: 100%;
   }
 }
 
 /* Linker rail kolom binnen de rechter-stack (zelfde x als broom) */
-._attachRail_97uxp_414 {
+._attachRail_xzyfl_414 {
   position: absolute;
   left: 7px;      /* exact als broom/newChat */
   top: 12px;      /* gelijk aan padding-top van chatInput */
@@ -423,18 +423,18 @@ a {
   justify-content: center;
 }
 /* Zorg dat de Fluent IconButton ook echt 40x40 is */
-._attachRail_97uxp_414 button {
+._attachRail_xzyfl_414 button {
   width: 40px !important;
   height: 40px !important;
 }
 /* Ruimte reserveren zodat je label + input niet onder de rail komen */
-._inputInset_97uxp_431 {
+._inputInset_xzyfl_431 {
   padding-left: 54px; /* 40px knop + marge */
   min-width: 0;
 }
 
 /* Statusbalk netjes */
-._fileStatusRow_97uxp_437 {
+._fileStatusRow_xzyfl_437 {
   display: flex;
   align-items: center;
   gap: 8px;
