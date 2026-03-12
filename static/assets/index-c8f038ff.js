@@ -78593,19 +78593,19 @@ function parseAnswer(answer) {
     generated_chart: answer.generated_chart
   };
 }
-const answerContainer = "_answerContainer_19oau_1";
-const answerText = "_answerText_19oau_14";
-const answerHeader = "_answerHeader_19oau_31";
-const answerFooter = "_answerFooter_19oau_35";
-const answerDisclaimerContainer = "_answerDisclaimerContainer_19oau_44";
-const answerDisclaimer = "_answerDisclaimer_19oau_44";
-const citationWrapper = "_citationWrapper_19oau_64";
-const citationContainer = "_citationContainer_19oau_72";
-const citation = "_citation_19oau_64";
-const accordionIcon = "_accordionIcon_19oau_122";
-const accordionTitle = "_accordionTitle_19oau_137";
-const clickableSup = "_clickableSup_19oau_153";
-const answerImage = "_answerImage_19oau_187";
+const answerContainer = "_answerContainer_buzs8_1";
+const answerText = "_answerText_buzs8_14";
+const answerHeader = "_answerHeader_buzs8_31";
+const answerFooter = "_answerFooter_buzs8_35";
+const answerDisclaimerContainer = "_answerDisclaimerContainer_buzs8_44";
+const answerDisclaimer = "_answerDisclaimer_buzs8_44";
+const citationWrapper = "_citationWrapper_buzs8_64";
+const citationContainer = "_citationContainer_buzs8_72";
+const citation = "_citation_buzs8_64";
+const accordionIcon = "_accordionIcon_buzs8_122";
+const accordionTitle = "_accordionTitle_buzs8_137";
+const clickableSup = "_clickableSup_buzs8_153";
+const answerImage = "_answerImage_buzs8_187";
 const styles$4 = {
   answerContainer,
   answerText,
@@ -78915,7 +78915,7 @@ const Answer = ({ answer, onCitationClicked, onExectResultClicked }) => {
             }
           )
         ] }) }) }),
-        /* @__PURE__ */ jsx(Stack.Item, { className: styles$4.answerDisclaimerContainer, children: /* @__PURE__ */ jsx("span", { className: styles$4.answerDisclaimer, children: "HOAKIE-generated content may be incorrect" }) }),
+        /* @__PURE__ */ jsx(Stack.Item, { className: styles$4.answerDisclaimerContainer, children: /* @__PURE__ */ jsx("span", { className: styles$4.answerDisclaimer, children: "HOAKIE-generated AI-content may be incorrect" }) }),
         !!((_d = answer.exec_results) == null ? void 0 : _d.length) && /* @__PURE__ */ jsx(Stack.Item, { onKeyDown: (e2) => e2.key === "Enter" || e2.key === " " ? toggleIsRefAccordionOpen() : null, children: /* @__PURE__ */ jsx(Stack, { style: { width: "100%" }, children: /* @__PURE__ */ jsxs(Stack, { horizontal: true, horizontalAlign: "start", verticalAlign: "center", children: [
           /* @__PURE__ */ jsx(
             Text,

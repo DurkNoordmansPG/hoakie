@@ -982,7 +982,7 @@ const Chat = () => {
                   <div className={styles.chatMessageGpt}>
                     <Answer
                       answer={{
-                        answer: 'Generating answer...',
+                        answer: 'Ik zoek het voor je op ... blijf aangehoakt!',
                         citations: [],
                         generated_chart: null
                       }}
