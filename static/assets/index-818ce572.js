@@ -78593,18 +78593,19 @@ function parseAnswer(answer) {
     generated_chart: answer.generated_chart
   };
 }
-const answerContainer = "_answerContainer_1qm4u_1";
-const answerText = "_answerText_1qm4u_14";
-const answerHeader = "_answerHeader_1qm4u_31";
-const answerFooter = "_answerFooter_1qm4u_35";
-const answerDisclaimerContainer = "_answerDisclaimerContainer_1qm4u_44";
-const answerDisclaimer = "_answerDisclaimer_1qm4u_44";
-const citationWrapper = "_citationWrapper_1qm4u_64";
-const citationContainer = "_citationContainer_1qm4u_72";
-const citation = "_citation_1qm4u_64";
-const accordionIcon = "_accordionIcon_1qm4u_122";
-const accordionTitle = "_accordionTitle_1qm4u_137";
-const clickableSup = "_clickableSup_1qm4u_153";
+const answerContainer = "_answerContainer_19oau_1";
+const answerText = "_answerText_19oau_14";
+const answerHeader = "_answerHeader_19oau_31";
+const answerFooter = "_answerFooter_19oau_35";
+const answerDisclaimerContainer = "_answerDisclaimerContainer_19oau_44";
+const answerDisclaimer = "_answerDisclaimer_19oau_44";
+const citationWrapper = "_citationWrapper_19oau_64";
+const citationContainer = "_citationContainer_19oau_72";
+const citation = "_citation_19oau_64";
+const accordionIcon = "_accordionIcon_19oau_122";
+const accordionTitle = "_accordionTitle_19oau_137";
+const clickableSup = "_clickableSup_19oau_153";
+const answerImage = "_answerImage_19oau_187";
 const styles$4 = {
   answerContainer,
   answerText,
@@ -78617,7 +78618,8 @@ const styles$4 = {
   citation,
   accordionIcon,
   accordionTitle,
-  clickableSup
+  clickableSup,
+  answerImage
 };
 const Answer = ({ answer, onCitationClicked, onExectResultClicked }) => {
   var _a2, _b, _c, _d;
@@ -78858,6 +78860,7 @@ const Answer = ({ answer, onCitationClicked, onExectResultClicked }) => {
   return /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsxs(Stack, { className: styles$4.answerContainer, tabIndex: 0, children: [
       /* @__PURE__ */ jsx(Stack.Item, { children: /* @__PURE__ */ jsxs(Stack, { horizontal: true, grow: true, children: [
+        /* @__PURE__ */ jsx(Stack.Item, { className: styles$4.answerImage, children: /* @__PURE__ */ jsx("img", { src: "/static/hoakie.png", alt: "Hoakie logo" }) }),
         /* @__PURE__ */ jsx(Stack.Item, { grow: true, children: parsedAnswer && /* @__PURE__ */ jsx(
           ReactMarkdown,
           {

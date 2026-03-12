@@ -246,6 +246,10 @@ export const Answer = ({ answer, onCitationClicked, onExectResultClicked }: Prop
       <Stack className={styles.answerContainer} tabIndex={0}>
         <Stack.Item>
           <Stack horizontal grow>
+            {/* image on left */}
+            <Stack.Item className={styles.answerImage}>
+              <img src="/static/hoakie.png" alt="Hoakie logo" />
+            </Stack.Item>
             <Stack.Item grow>
               {parsedAnswer && <ReactMarkdown
                 linkTarget="_blank"
