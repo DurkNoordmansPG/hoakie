@@ -328,7 +328,7 @@ export const Answer = ({ answer, onCitationClicked, onExectResultClicked }: Prop
             </Stack.Item>
           )}
           <Stack.Item className={styles.answerDisclaimerContainer}>
-            <span className={styles.answerDisclaimer}>HOAKIE-generated AI-content may be incorrect</span>
+            <span className={styles.answerDisclaimer}>Wat Hoakie oplevert is AI‑gegenereerd. Niet foutloos, maar toch: kon minder.</span>
           </Stack.Item>
           {!!answer.exec_results?.length && (
             <Stack.Item onKeyDown={e => (e.key === 'Enter' || e.key === ' ' ? toggleIsRefAccordionOpen() : null)}>

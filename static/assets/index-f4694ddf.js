@@ -78915,7 +78915,7 @@ const Answer = ({ answer, onCitationClicked, onExectResultClicked }) => {
             }
           )
         ] }) }) }),
-        /* @__PURE__ */ jsx(Stack.Item, { className: styles$4.answerDisclaimerContainer, children: /* @__PURE__ */ jsx("span", { className: styles$4.answerDisclaimer, children: "HOAKIE-generated AI-content may be incorrect" }) }),
+        /* @__PURE__ */ jsx(Stack.Item, { className: styles$4.answerDisclaimerContainer, children: /* @__PURE__ */ jsx("span", { className: styles$4.answerDisclaimer, children: "Wat Hoakie oplevert is AI‑gegenereerd. Niet foutloos, maar toch: kon minder." }) }),
         !!((_d = answer.exec_results) == null ? void 0 : _d.length) && /* @__PURE__ */ jsx(Stack.Item, { onKeyDown: (e2) => e2.key === "Enter" || e2.key === " " ? toggleIsRefAccordionOpen() : null, children: /* @__PURE__ */ jsx(Stack, { style: { width: "100%" }, children: /* @__PURE__ */ jsxs(Stack, { horizontal: true, horizontalAlign: "start", verticalAlign: "center", children: [
           /* @__PURE__ */ jsx(
             Text,
