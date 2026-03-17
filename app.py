@@ -159,6 +159,7 @@ frontend_settings = {
     "ui": {
         "title": app_settings.ui.title,
         "logo": app_settings.ui.logo,
+        "favicon": app_settings.ui.favicon,
         "chat_logo": app_settings.ui.chat_logo or app_settings.ui.logo,
         "chat_title": app_settings.ui.chat_title,
         "chat_description": app_settings.ui.chat_description,
