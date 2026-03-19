@@ -923,7 +923,8 @@ const Chat = () => {
           <div className={styles.chatContainer} style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
             {!messages || messages.length < 1 ? (
               <Stack className={styles.chatEmptyState} style={{ flex: '1 1 auto', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  {showTaakwolk && <img src="static/tekstwolkv2.png" alt="Info" className={styles.chatIcon}/>}
                   <img
                     src={logo}
                     className={styles.chatIcon}
@@ -931,7 +932,6 @@ const Chat = () => {
                     onClick={() => setShowTaakwolk(!showTaakwolk)}
                     style={{ cursor: 'pointer' }}
                   />
-                  {showTaakwolk && <img src="static/tekstwolk.png" alt="Info" className={styles.chatIcon} style={{ marginLeft: '10px' }} />}
                 </div>
                 <h1 className={styles.chatEmptyStateTitle}>{ui?.chat_title}</h1>
                 <h2 className={styles.chatEmptyStateSubtitle}>{ui?.chat_description}</h2>

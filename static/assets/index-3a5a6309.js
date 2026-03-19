@@ -80518,7 +80518,8 @@ Hieronder staat de inhoud van de meegezonden bestanden. Gebruik deze informatie 
   ] }) : /* @__PURE__ */ jsxs(Stack, { horizontal: true, className: styles$5.chatRoot, children: [
     /* @__PURE__ */ jsxs("div", { className: styles$5.chatContainer, style: { display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }, children: [
       !messages2 || messages2.length < 1 ? /* @__PURE__ */ jsxs(Stack, { className: styles$5.chatEmptyState, style: { flex: "1 1 auto", overflow: "hidden" }, children: [
-        /* @__PURE__ */ jsxs("div", { style: { display: "flex", alignItems: "center", justifyContent: "center" }, children: [
+        /* @__PURE__ */ jsxs("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }, children: [
+          showTaakwolk && /* @__PURE__ */ jsx("img", { src: "static/tekstwolkv2.png", alt: "Info", className: styles$5.chatIcon }),
           /* @__PURE__ */ jsx(
             "img",
             {
@@ -80528,8 +80529,7 @@ Hieronder staat de inhoud van de meegezonden bestanden. Gebruik deze informatie 
               onClick: () => setShowTaakwolk(!showTaakwolk),
               style: { cursor: "pointer" }
             }
-          ),
-          showTaakwolk && /* @__PURE__ */ jsx("img", { src: "static/tekstwolk.png", alt: "Info", className: styles$5.chatIcon, style: { marginLeft: "10px" } })
+          )
         ] }),
         /* @__PURE__ */ jsx("h1", { className: styles$5.chatEmptyStateTitle, children: ui2 == null ? void 0 : ui2.chat_title }),
         /* @__PURE__ */ jsx("h2", { className: styles$5.chatEmptyStateSubtitle, children: ui2 == null ? void 0 : ui2.chat_description }),
