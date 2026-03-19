@@ -76,6 +76,9 @@ const Chat = () => {
   // selected file names for UI
   const [selectedFiles, setSelectedFiles] = useState<string[]>([])
 
+  // toggle for taakwolk image
+  const [showTaakwolk, setShowTaakwolk] = useState<boolean>(false)
+
   const errorDialogContentProps = {
     type: DialogType.close,
     title: errorMsg?.title,
@@ -920,9 +923,20 @@ const Chat = () => {
           <div className={styles.chatContainer} style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
             {!messages || messages.length < 1 ? (
               <Stack className={styles.chatEmptyState} style={{ flex: '1 1 auto', overflow: 'hidden' }}>
-                <img src={logo} className={styles.chatIcon} aria-hidden="true" />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img
+                    src={logo}
+                    className={styles.chatIcon}
+                    aria-hidden="true"
+                    onClick={() => setShowTaakwolk(!showTaakwolk)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  {showTaakwolk && <img src="static/tekstwolk.png" alt="Info" className={styles.chatIcon} style={{ marginLeft: '10px' }} />}
+                </div>
                 <h1 className={styles.chatEmptyStateTitle}>{ui?.chat_title}</h1>
                 <h2 className={styles.chatEmptyStateSubtitle}>{ui?.chat_description}</h2>
+                <br></br>
+                <h3 className={styles.chatEmptyStateSubtitle}>{"Ik geef aan wat we als Provincie vinden, willen en doen in onze visies, beleidsprogramma's en uitvoeringsprogramma's. Stel mij een vraag over een onderwerp en ik vertel je er alles over!"}</h3>
               </Stack>
             ) : (
               <div
@@ -1063,7 +1077,7 @@ const Chat = () => {
               {/* Rechterkolom: upload/status + vraagveld */}
               <Stack grow styles={{ root: { minWidth: 0 } }}>
                 {/* Attach-knop in dezelfde horizontale kolom als broom/newchat */}
-                <div className={styles.attachRail}>
+                {/* <div className={styles.attachRail}>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -1079,7 +1093,7 @@ const Chat = () => {
                     disabled={isLoading}
                     onClick={() => fileInputRef.current?.click()}
                   />
-                </div>
+                </div> */}
 
                 {/* Alles rechts krijgt inset zodat het niet onder de attach-knop komt */}
                 <div className={styles.inputInset}>

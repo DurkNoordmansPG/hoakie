@@ -79781,6 +79781,7 @@ const Chat = () => {
   const [answerId, setAnswerId] = reactExports.useState("");
   const [uploadingFiles, setUploadingFiles] = reactExports.useState(false);
   const [selectedFiles, setSelectedFiles] = reactExports.useState([]);
+  const [showTaakwolk, setShowTaakwolk] = reactExports.useState(false);
   const errorDialogContentProps = {
     type: DialogType.close,
     title: errorMsg == null ? void 0 : errorMsg.title,
@@ -79894,26 +79895,6 @@ const Chat = () => {
     if (fileInputRef.current)
       fileInputRef.current.value = "";
     setSelectedFiles([]);
-  };
-  const onFilesChanged = (e2) => {
-    const files = e2.target.files ? Array.from(e2.target.files) : [];
-    const allowedExtensions = [".doc", ".docx", ".txt", ".pdf"];
-    const invalidFiles = files.filter((file) => {
-      const extension2 = file.name.toLowerCase().substring(file.name.lastIndexOf("."));
-      return !allowedExtensions.includes(extension2);
-    });
-    if (invalidFiles.length > 0) {
-      setErrorMsg({
-        title: "Ongeldig bestandstype",
-        subtitle: "Alleen Word (.doc, .docx), TXT en PDF bestanden zijn toegestaan."
-      });
-      toggleErrorDialog();
-      if (fileInputRef.current)
-        fileInputRef.current.value = "";
-      setSelectedFiles([]);
-      return;
-    }
-    setSelectedFiles(files.map((f2) => f2.name));
   };
   const selectedFilesLabel = reactExports.useMemo(() => {
     if (selectedFiles.length === 0)
@@ -80537,9 +80518,23 @@ Hieronder staat de inhoud van de meegezonden bestanden. Gebruik deze informatie 
   ] }) : /* @__PURE__ */ jsxs(Stack, { horizontal: true, className: styles$5.chatRoot, children: [
     /* @__PURE__ */ jsxs("div", { className: styles$5.chatContainer, style: { display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }, children: [
       !messages2 || messages2.length < 1 ? /* @__PURE__ */ jsxs(Stack, { className: styles$5.chatEmptyState, style: { flex: "1 1 auto", overflow: "hidden" }, children: [
-        /* @__PURE__ */ jsx("img", { src: logo, className: styles$5.chatIcon, "aria-hidden": "true" }),
+        /* @__PURE__ */ jsxs("div", { style: { display: "flex", alignItems: "center", justifyContent: "center" }, children: [
+          /* @__PURE__ */ jsx(
+            "img",
+            {
+              src: logo,
+              className: styles$5.chatIcon,
+              "aria-hidden": "true",
+              onClick: () => setShowTaakwolk(!showTaakwolk),
+              style: { cursor: "pointer" }
+            }
+          ),
+          showTaakwolk && /* @__PURE__ */ jsx("img", { src: "static/tekstwolk.png", alt: "Info", className: styles$5.chatIcon, style: { marginLeft: "10px" } })
+        ] }),
         /* @__PURE__ */ jsx("h1", { className: styles$5.chatEmptyStateTitle, children: ui2 == null ? void 0 : ui2.chat_title }),
-        /* @__PURE__ */ jsx("h2", { className: styles$5.chatEmptyStateSubtitle, children: ui2 == null ? void 0 : ui2.chat_description })
+        /* @__PURE__ */ jsx("h2", { className: styles$5.chatEmptyStateSubtitle, children: ui2 == null ? void 0 : ui2.chat_description }),
+        /* @__PURE__ */ jsx("br", {}),
+        /* @__PURE__ */ jsx("h3", { className: styles$5.chatEmptyStateSubtitle, children: "Ik geef aan wat we als Provincie vinden, willen en doen in onze visies, beleidsprogramma's en uitvoeringsprogramma's. Stel mij een vraag over een onderwerp en ik vertel je er alles over!" })
       ] }) : /* @__PURE__ */ jsxs(
         "div",
         {
@@ -80652,77 +80647,49 @@ Hieronder staat de inhoud van de meegezonden bestanden. Gebruik deze informatie 
           ),
           /* @__PURE__ */ jsx(Dialog, { hidden: hideErrorDialog, onDismiss: handleErrorDialogClose, dialogContentProps: errorDialogContentProps, modalProps })
         ] }),
-        /* @__PURE__ */ jsxs(Stack, { grow: true, styles: { root: { minWidth: 0 } }, children: [
-          /* @__PURE__ */ jsxs("div", { className: styles$5.attachRail, children: [
+        /* @__PURE__ */ jsx(Stack, { grow: true, styles: { root: { minWidth: 0 } }, children: /* @__PURE__ */ jsxs("div", { className: styles$5.inputInset, children: [
+          /* @__PURE__ */ jsxs("div", { className: styles$5.fileStatusRow, children: [
             /* @__PURE__ */ jsx(
-              "input",
+              "span",
               {
-                ref: fileInputRef,
-                type: "file",
-                multiple: true,
-                disabled: isLoading,
-                onChange: onFilesChanged,
-                accept: ".doc,.docx,.txt,.pdf",
-                style: { display: "none" }
+                title: selectedFiles.length > 0 ? selectedFiles.join(", ") : "Geen bestand gekozen",
+                style: {
+                  fontSize: 12,
+                  opacity: 0.85,
+                  whiteSpace: "nowrap",
+                  textOverflow: "ellipsis",
+                  overflow: "hidden",
+                  minWidth: 0,
+                  flex: 1
+                },
+                children: selectedFilesLabel
               }
             ),
-            /* @__PURE__ */ jsx(
+            selectedFiles.length > 0 && /* @__PURE__ */ jsx(
               IconButton,
               {
-                iconProps: { iconName: "Attach" },
-                ariaLabel: "Bestanden toevoegen",
+                iconProps: { iconName: "Cancel" },
+                ariaLabel: "Selectie wissen",
                 disabled: isLoading,
-                onClick: () => {
-                  var _a3;
-                  return (_a3 = fileInputRef.current) == null ? void 0 : _a3.click();
-                }
+                onClick: clearSelectedFiles
               }
             )
           ] }),
-          /* @__PURE__ */ jsxs("div", { className: styles$5.inputInset, children: [
-            /* @__PURE__ */ jsxs("div", { className: styles$5.fileStatusRow, children: [
-              /* @__PURE__ */ jsx(
-                "span",
-                {
-                  title: selectedFiles.length > 0 ? selectedFiles.join(", ") : "Geen bestand gekozen",
-                  style: {
-                    fontSize: 12,
-                    opacity: 0.85,
-                    whiteSpace: "nowrap",
-                    textOverflow: "ellipsis",
-                    overflow: "hidden",
-                    minWidth: 0,
-                    flex: 1
-                  },
-                  children: selectedFilesLabel
-                }
-              ),
-              selectedFiles.length > 0 && /* @__PURE__ */ jsx(
-                IconButton,
-                {
-                  iconProps: { iconName: "Cancel" },
-                  ariaLabel: "Selectie wissen",
-                  disabled: isLoading,
-                  onClick: clearSelectedFiles
-                }
-              )
-            ] }),
-            uploadingFiles && /* @__PURE__ */ jsx("div", { style: { fontSize: 12, opacity: 0.85, marginBottom: 6 }, children: "Bestanden worden geüpload…" }),
-            /* @__PURE__ */ jsx(
-              QuestionInput,
-              {
-                clearOnSend: true,
-                placeholder: "Stel je vraag...",
-                disabled: isLoading,
-                onSend: (question, id2) => {
-                  var _a3;
-                  ((_a3 = appStateContext == null ? void 0 : appStateContext.state.isCosmosDBAvailable) == null ? void 0 : _a3.cosmosDB) ? makeApiRequestWithCosmosDB(question, id2) : makeApiRequestWithoutCosmosDB(question, id2);
-                },
-                conversationId: ((_f = appStateContext == null ? void 0 : appStateContext.state.currentChat) == null ? void 0 : _f.id) ? (_g = appStateContext == null ? void 0 : appStateContext.state.currentChat) == null ? void 0 : _g.id : void 0
-              }
-            )
-          ] })
-        ] })
+          uploadingFiles && /* @__PURE__ */ jsx("div", { style: { fontSize: 12, opacity: 0.85, marginBottom: 6 }, children: "Bestanden worden geüpload…" }),
+          /* @__PURE__ */ jsx(
+            QuestionInput,
+            {
+              clearOnSend: true,
+              placeholder: "Stel je vraag...",
+              disabled: isLoading,
+              onSend: (question, id2) => {
+                var _a3;
+                ((_a3 = appStateContext == null ? void 0 : appStateContext.state.isCosmosDBAvailable) == null ? void 0 : _a3.cosmosDB) ? makeApiRequestWithCosmosDB(question, id2) : makeApiRequestWithoutCosmosDB(question, id2);
+              },
+              conversationId: ((_f = appStateContext == null ? void 0 : appStateContext.state.currentChat) == null ? void 0 : _f.id) ? (_g = appStateContext == null ? void 0 : appStateContext.state.currentChat) == null ? void 0 : _g.id : void 0
+            }
+          )
+        ] }) })
       ] })
     ] }),
     messages2 && messages2.length > 0 && isCitationPanelOpen && activeCitation && /* @__PURE__ */ jsxs(Stack.Item, { className: styles$5.citationPanel, tabIndex: 0, role: "tabpanel", "aria-label": "Citations Panel", children: [
