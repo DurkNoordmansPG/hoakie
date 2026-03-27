@@ -63,9 +63,15 @@
 }
 
 .chatIcon {
-  height: 200px;
+  height: 175px;
   width: auto;
 }
+
+.chatTekstwolk {
+  height: 100px;
+  width: auto;
+}
+
 
 .chatMessageStream {
   flex-grow: 1;

@@ -924,7 +924,7 @@ const Chat = () => {
             {!messages || messages.length < 1 ? (
               <Stack className={styles.chatEmptyState} style={{ flex: '1 1 auto', overflow: 'hidden' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                  {showTaakwolk && <img src="static/tekstwolkv2.png" alt="Info" className={styles.chatIcon}/>}
+                  {showTaakwolk && <img src="static/tekstwolkv2.png" alt="Info" className={styles.chatTekstwolk}/>}
                   <img
                     src={logo}
                     className={styles.chatIcon}

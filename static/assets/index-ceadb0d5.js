@@ -77893,38 +77893,39 @@ const nord = {
     "fontStyle": "italic"
   }
 };
-const container$1 = "_container_xzyfl_1";
-const chatRoot = "_chatRoot_xzyfl_8";
-const chatContainer = "_chatContainer_xzyfl_18";
-const chatEmptyState = "_chatEmptyState_xzyfl_33";
-const chatEmptyStateTitle = "_chatEmptyStateTitle_xzyfl_41";
-const chatEmptyStateSubtitle = "_chatEmptyStateSubtitle_xzyfl_53";
-const chatIcon = "_chatIcon_xzyfl_65";
-const chatMessageStream = "_chatMessageStream_xzyfl_70";
-const chatMessageUser = "_chatMessageUser_xzyfl_83";
-const chatMessageUserMessage = "_chatMessageUserMessage_xzyfl_89";
-const chatMessageGpt = "_chatMessageGpt_xzyfl_110";
-const chatMessageError = "_chatMessageError_xzyfl_116";
-const chatMessageErrorContent = "_chatMessageErrorContent_xzyfl_130";
-const chatInput = "_chatInput_xzyfl_142";
-const clearChatBroom = "_clearChatBroom_xzyfl_166";
-const clearChatBroomNoCosmos = "_clearChatBroomNoCosmos_xzyfl_182";
-const newChatIcon = "_newChatIcon_xzyfl_198";
-const stopGeneratingContainer = "_stopGeneratingContainer_xzyfl_214";
-const stopGeneratingIcon = "_stopGeneratingIcon_xzyfl_231";
-const stopGeneratingText = "_stopGeneratingText_xzyfl_237";
-const citationPanel = "_citationPanel_xzyfl_252";
-const citationPanelHeaderContainer = "_citationPanelHeaderContainer_xzyfl_272";
-const citationPanelHeader = "_citationPanelHeader_xzyfl_272";
-const citationPanelDismiss = "_citationPanelDismiss_xzyfl_287";
-const citationPanelTitle = "_citationPanelTitle_xzyfl_298";
-const citationPanelContent = "_citationPanelContent_xzyfl_313";
-const exectResultList = "_exectResultList_xzyfl_325";
-const viewSourceButton = "_viewSourceButton_xzyfl_358";
-const uploadedImageChat = "_uploadedImageChat_xzyfl_377";
-const attachRail = "_attachRail_xzyfl_414";
-const inputInset = "_inputInset_xzyfl_431";
-const fileStatusRow = "_fileStatusRow_xzyfl_437";
+const container$1 = "_container_10gzc_1";
+const chatRoot = "_chatRoot_10gzc_8";
+const chatContainer = "_chatContainer_10gzc_18";
+const chatEmptyState = "_chatEmptyState_10gzc_33";
+const chatEmptyStateTitle = "_chatEmptyStateTitle_10gzc_41";
+const chatEmptyStateSubtitle = "_chatEmptyStateSubtitle_10gzc_53";
+const chatIcon = "_chatIcon_10gzc_65";
+const chatTekstwolk = "_chatTekstwolk_10gzc_70";
+const chatMessageStream = "_chatMessageStream_10gzc_76";
+const chatMessageUser = "_chatMessageUser_10gzc_89";
+const chatMessageUserMessage = "_chatMessageUserMessage_10gzc_95";
+const chatMessageGpt = "_chatMessageGpt_10gzc_116";
+const chatMessageError = "_chatMessageError_10gzc_122";
+const chatMessageErrorContent = "_chatMessageErrorContent_10gzc_136";
+const chatInput = "_chatInput_10gzc_148";
+const clearChatBroom = "_clearChatBroom_10gzc_172";
+const clearChatBroomNoCosmos = "_clearChatBroomNoCosmos_10gzc_188";
+const newChatIcon = "_newChatIcon_10gzc_204";
+const stopGeneratingContainer = "_stopGeneratingContainer_10gzc_220";
+const stopGeneratingIcon = "_stopGeneratingIcon_10gzc_237";
+const stopGeneratingText = "_stopGeneratingText_10gzc_243";
+const citationPanel = "_citationPanel_10gzc_258";
+const citationPanelHeaderContainer = "_citationPanelHeaderContainer_10gzc_278";
+const citationPanelHeader = "_citationPanelHeader_10gzc_278";
+const citationPanelDismiss = "_citationPanelDismiss_10gzc_293";
+const citationPanelTitle = "_citationPanelTitle_10gzc_304";
+const citationPanelContent = "_citationPanelContent_10gzc_319";
+const exectResultList = "_exectResultList_10gzc_331";
+const viewSourceButton = "_viewSourceButton_10gzc_364";
+const uploadedImageChat = "_uploadedImageChat_10gzc_383";
+const attachRail = "_attachRail_10gzc_420";
+const inputInset = "_inputInset_10gzc_437";
+const fileStatusRow = "_fileStatusRow_10gzc_443";
 const styles$5 = {
   container: container$1,
   chatRoot,
@@ -77933,6 +77934,7 @@ const styles$5 = {
   chatEmptyStateTitle,
   chatEmptyStateSubtitle,
   chatIcon,
+  chatTekstwolk,
   chatMessageStream,
   chatMessageUser,
   chatMessageUserMessage,
@@ -80519,7 +80521,7 @@ Hieronder staat de inhoud van de meegezonden bestanden. Gebruik deze informatie 
     /* @__PURE__ */ jsxs("div", { className: styles$5.chatContainer, style: { display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }, children: [
       !messages2 || messages2.length < 1 ? /* @__PURE__ */ jsxs(Stack, { className: styles$5.chatEmptyState, style: { flex: "1 1 auto", overflow: "hidden" }, children: [
         /* @__PURE__ */ jsxs("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }, children: [
-          showTaakwolk && /* @__PURE__ */ jsx("img", { src: "static/tekstwolkv2.png", alt: "Info", className: styles$5.chatIcon }),
+          showTaakwolk && /* @__PURE__ */ jsx("img", { src: "static/tekstwolkv2.png", alt: "Info", className: styles$5.chatTekstwolk }),
           /* @__PURE__ */ jsx(
             "img",
             {
